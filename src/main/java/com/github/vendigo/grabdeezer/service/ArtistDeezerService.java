@@ -4,6 +4,7 @@ import com.github.vendigo.grabdeezer.client.DeezerClientWrapper;
 import com.github.vendigo.grabdeezer.dto.AlbumDto;
 import com.github.vendigo.grabdeezer.dto.ArtistDto;
 import com.github.vendigo.grabdeezer.dto.TrackDto;
+import com.github.vendigo.grabdeezer.entity.AlbumEntity;
 import com.github.vendigo.grabdeezer.entity.ArtistEntity;
 import com.github.vendigo.grabdeezer.entity.TrackEntity;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,24 +28,17 @@ public class ArtistDeezerService {
 
     private final DeezerClientWrapper deezerClient;
 
-    public ArtistEntity loadArtist(Long artistId) {
-        ArtistDto artist = deezerClient.loadArtist(artistId);
-        log.info("Loading artist: {}", artist.name());
-
-        List<Pair<AlbumDto, List<TrackDto>>> albums = deezerClient.loadAlbums(artistId, DEFAULT_PAGE_SIZE)
+    public ArtistEntity loadArtist(ArtistEntity artist) {
+        List<Pair<AlbumDto, List<TrackDto>>> albums = deezerClient.loadAlbums(artist.getId(), DEFAULT_PAGE_SIZE)
                 .data()
                 .stream()
                 .map(this::loadAlbumTracks)
                 .toList();
-        return ArtistMapper.mapFullArtist(artist, albums);
-    }
-
-    public Set<Long> getRelatedArtistIds(Long artistId) {
-        return deezerClient.loadRelatedArtists(artistId)
-                .data()
-                .stream()
-                .map(ArtistDto::id)
-                .collect(Collectors.toSet());
+        List<AlbumEntity> albumEntities = ArtistMapper.mapAlbums(albums);
+        artist.setAlbums(albumEntities);
+        artist.setCreatedDate(LocalDateTime.now());
+        artist.setFullLoaded(true);
+        return artist;
     }
 
     private Pair<AlbumDto, List<TrackDto>> loadAlbumTracks(AlbumDto album) {

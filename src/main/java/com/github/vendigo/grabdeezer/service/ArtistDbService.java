@@ -23,16 +23,6 @@ public class ArtistDbService {
     private final ArtistQueueRepository artistQueueRepository;
     private final TrackRepository trackRepository;
 
-    public void saveFullArtist(ArtistEntity artist) {
-        if (artist.getAlbums().isEmpty()) {
-            log.warn("Empty artist: {}, skipping", artist.getName());
-            return;
-        }
-
-        artistRepository.save(artist);
-        printStats(artist);
-    }
-
     public void saveArtists(List<ArtistEntity> artists) {
         artistRepository.saveAll(artists);
     }
@@ -70,7 +60,11 @@ public class ArtistDbService {
     }
 
     public long countArtistsToTopLoad() {
-        return artistRepository.countArtistIdsToTopLoad();
+        return artistRepository.countArtists(false, false);
+    }
+
+    public long countArtistsToFullLoad() {
+        return artistRepository.countArtists(false, true);
     }
 
     private void printStats(ArtistEntity artist) {
@@ -85,7 +79,13 @@ public class ArtistDbService {
     }
 
     public List<ArtistEntity> getArtistsToTopLoad(int topLoadChunkSize) {
-        return artistRepository.findArtistIdsToTopLoad(Pageable.ofSize(topLoadChunkSize)).toList();
+        return artistRepository.findArtistsToLoad(false, false,
+                Pageable.ofSize(topLoadChunkSize)).toList();
+    }
+
+    public List<ArtistEntity> getArtistsToFullLoad(int chunkSize) {
+        return artistRepository.findArtistsToLoad(false, true,
+                Pageable.ofSize(chunkSize)).toList();
     }
 
     public void saveTracks(List<TrackEntity> tracks) {

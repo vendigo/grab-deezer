@@ -42,10 +42,6 @@ public class DeezerClientWrapper {
         return rateLimited(() -> deezerClient.loadTrack(trackId));
     }
 
-    public ResultDto<ArtistDto> loadRelatedArtists(Long artistId) {
-        return rateLimited(() -> deezerClient.loadRelatedArtists(artistId));
-    }
-
     public ResultDto<TrackDto> loadTopTracks(Long artistId, Integer pageSize) {
         return rateLimited(() -> deezerClient.loadTopTracks(artistId, pageSize));
     }

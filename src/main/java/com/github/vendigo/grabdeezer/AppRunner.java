@@ -7,20 +7,19 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import static com.github.vendigo.grabdeezer.service.ArtistFacade.FULL_LOAD_CHUNK_SIZE;
 import static com.github.vendigo.grabdeezer.service.ArtistFacade.PRELOAD_CHUNK_SIZE;
 
 @Component
 @Slf4j
 @AllArgsConstructor
 public class AppRunner implements ApplicationRunner {
-
-    private static final int FULL_LOAD_ITERATIONS = 100;
     private final ArtistFacade artistFacade;
 
     @Override
     public void run(ApplicationArguments args) {
-        topLoad();
-        //fullLoad();
+        //topLoad();
+        fullLoad();
         //preload();
     }
 
@@ -40,11 +39,10 @@ public class AppRunner implements ApplicationRunner {
     }
 
     private void fullLoad() {
-        int i = 0;
-        boolean moreToLoad = true;
-
-        while (moreToLoad && i++ <= FULL_LOAD_ITERATIONS) {
-            moreToLoad = artistFacade.fullLoadArtists();
+        long artistsToFullLoad = 1;
+        while (artistsToFullLoad > 0) {
+            artistsToFullLoad = artistFacade.fullLoadArtists();
+            log.info("Preloaded {} artists, {} to go", FULL_LOAD_CHUNK_SIZE, artistsToFullLoad);
         }
     }
 

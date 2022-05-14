@@ -24,27 +24,26 @@ import java.util.stream.Collectors;
 public class ArtistFacade {
 
     public static final int PRELOAD_CHUNK_SIZE = 45;
+    public static final int FULL_LOAD_CHUNK_SIZE = 10;
     private static final int TOP_LOAD_CHUNK_SIZE = 20;
-    private static final int FULL_LOAD_CHUNK_SIZE = 10;
     private final ArtistDeezerService artistDeezerService;
     private final ArtistDbService artistDbService;
 
     @Transactional
-    public boolean fullLoadArtists() {
-        Set<Long> artistIds = artistDbService.getArtistIdsFromQueue(FULL_LOAD_CHUNK_SIZE);
+    public long fullLoadArtists() {
+        List<ArtistEntity> artists = artistDbService.getArtistsToFullLoad(FULL_LOAD_CHUNK_SIZE);
 
-        if (artistIds.isEmpty()) {
+        if (artists.isEmpty()) {
             log.info("No more artists to load");
-            return false;
+            return 0;
         }
 
-        Set<Long> artistIdsToLoad = artistDbService.filterLoadedArtistIds(artistIds);
-        log.info("Got {} artistId to load", artistIdsToLoad.size());
+        List<ArtistEntity> fullArtists = artists.stream()
+                .map(artistDeezerService::loadArtist)
+                .collect(Collectors.toList());
+        artistDbService.saveArtists(fullArtists);
 
-        artistIdsToLoad.forEach(this::loadArtist);
-        artistDbService.removeFromQueue(artistIds);
-
-        return true;
+        return artistDbService.countArtistsToFullLoad();
     }
 
     @Transactional
@@ -60,24 +59,6 @@ public class ArtistFacade {
         artistDbService.saveArtists(preloadedArtists);
         artistDbService.removeFromQueue(artistIds);
         return artistDbService.getQueueSize();
-    }
-
-    private void loadArtist(Long artistId) {
-        ArtistEntity artist = artistDeezerService.loadArtist(artistId);
-        artistDbService.saveFullArtist(artist);
-        Set<Long> artistIdsToLoad = collectNextArtistsToLoad(artist);
-        artistDbService.addToQueue(artistIdsToLoad);
-    }
-
-    private Set<Long> collectNextArtistsToLoad(ArtistEntity artist) {
-        Set<Long> collabs = artist.getAlbums().stream()
-                .map(AlbumEntity::getTracks)
-                .flatMap(Collection::stream)
-                .map(TrackEntity::getContributorsIds)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
-        Set<Long> relatedArtists = artistDeezerService.getRelatedArtistIds(artist.getId());
-        return Sets.union(collabs, relatedArtists);
     }
 
     @Transactional

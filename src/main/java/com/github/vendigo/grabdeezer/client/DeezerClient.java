@@ -24,9 +24,6 @@ public interface DeezerClient {
     @GetMapping("track/{trackId}")
     TrackDto loadTrack(@PathVariable("trackId") Long trackId);
 
-    @GetMapping("artist/{artistId}/related")
-    ResultDto<ArtistDto> loadRelatedArtists(@PathVariable("artistId") Long artistId);
-
     @GetMapping("artist/{artistId}/top")
     ResultDto<TrackDto> loadTopTracks(@PathVariable("artistId") Long artistId, @RequestParam("limit") Integer limit);
 }

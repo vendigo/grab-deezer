@@ -18,13 +18,6 @@ import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ArtistMapper {
-    public static ArtistEntity mapFullArtist(ArtistDto dto, List<Pair<AlbumDto, List<TrackDto>>> albums) {
-        List<AlbumEntity> mappedAlbums = albums.stream()
-                .map(pair -> mapAlbum(pair.getFirst(), pair.getSecond()))
-                .toList();
-        return new ArtistEntity(dto.id(), dto.name(), dto.picture(), dto.fans(), mappedAlbums,
-                true, false, 0, LocalDateTime.now());
-    }
 
     public static ArtistEntity mapPreloadArtist(ArtistDto dto) {
         return new ArtistEntity(dto.id(), dto.name(), dto.picture(), dto.fans(), null,
@@ -35,6 +28,12 @@ public final class ArtistMapper {
         return tracks.stream()
                 .map(ArtistMapper::mapTrack)
                 .collect(Collectors.toList());
+    }
+
+    public static List<AlbumEntity> mapAlbums(List<Pair<AlbumDto, List<TrackDto>>> albums) {
+        return albums.stream()
+                .map(pair -> mapAlbum(pair.getFirst(), pair.getSecond()))
+                .toList();
     }
 
     private static AlbumEntity mapAlbum(AlbumDto dto, List<TrackDto> tracks) {
