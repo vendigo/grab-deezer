@@ -18,7 +18,7 @@ public interface ArtistRepository extends JpaRepository<ArtistEntity, Long> {
     @Query("""
             SELECT artist FROM ArtistEntity artist WHERE
              artist.fullLoaded = :fullLoaded AND artist.topLoaded = :topLoaded
-             ORDER BY artist.priority DESC, artist.createdDate, artist.fans DESC NULLS LAST
+             ORDER BY artist.priority DESC, artist.createdDate, artist.fansCount DESC NULLS LAST
             """)
     Page<ArtistEntity> findArtistsToLoad(@Param("fullLoaded") boolean fullLoaded,
                                          @Param("topLoaded") boolean topLoaded,
@@ -27,4 +27,7 @@ public interface ArtistRepository extends JpaRepository<ArtistEntity, Long> {
     @Query("SELECT count(artist) FROM ArtistEntity artist WHERE " +
             "artist.fullLoaded = :fullLoaded AND artist.topLoaded = :topLoaded")
     Long countArtists(@Param("fullLoaded") boolean fullLoaded, @Param("topLoaded") boolean topLoaded);
+
+    @Query("SELECT artist FROM ArtistEntity artist WHERE artist.fansCount IS NULL OR artist.albumsCount IS NULL")
+    Page<ArtistEntity> findArtistsForEnriching(Pageable pageable);
 }

@@ -5,16 +5,12 @@ import com.github.vendigo.grabdeezer.dto.TrackDto;
 import com.github.vendigo.grabdeezer.entity.AlbumEntity;
 import com.github.vendigo.grabdeezer.entity.ArtistEntity;
 import com.github.vendigo.grabdeezer.entity.TrackEntity;
-import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -24,26 +20,28 @@ import java.util.stream.Collectors;
 public class ArtistFacade {
 
     public static final int PRELOAD_CHUNK_SIZE = 45;
-    public static final int FULL_LOAD_CHUNK_SIZE = 10;
+    public static final int FULL_LOAD_CHUNK_SIZE = 1;
+    public static final int ENRICH_FANS_CHUNK_SIZE = 50;
     private static final int TOP_LOAD_CHUNK_SIZE = 20;
     private final ArtistDeezerService artistDeezerService;
     private final ArtistDbService artistDbService;
 
     @Transactional
-    public long fullLoadArtists() {
+    public boolean fullLoadArtists() {
         List<ArtistEntity> artists = artistDbService.getArtistsToFullLoad(FULL_LOAD_CHUNK_SIZE);
 
         if (artists.isEmpty()) {
             log.info("No more artists to load");
-            return 0;
+            return false;
         }
 
         List<ArtistEntity> fullArtists = artists.stream()
                 .map(artistDeezerService::loadArtist)
+                .peek(ArtistFacade::printStats)
                 .collect(Collectors.toList());
         artistDbService.saveArtists(fullArtists);
 
-        return artistDbService.countArtistsToFullLoad();
+        return true;
     }
 
     @Transactional
@@ -81,6 +79,25 @@ public class ArtistFacade {
         return artistsToLoad;
     }
 
+    @Transactional
+    public boolean enrichArtists() {
+        List<ArtistEntity> artists = artistDbService.getArtistsForEnriching(ENRICH_FANS_CHUNK_SIZE);
+
+        if (artists.isEmpty()) {
+            return false;
+        }
+
+        artists.forEach(artist -> {
+            ArtistDto artistDto = artistDeezerService.preloadArtist(artist.getId());
+            if (artistDto != null) {
+                artist.setFansCount(artistDto.fans());
+                artist.setAlbumsCount(artistDto.albums());
+            }
+        });
+
+        return true;
+    }
+
     private int saveMissingAsPreloaded(List<TrackDto> tracks) {
         Map<Long, ArtistDto> artistsById = tracks.stream()
                 .map(TrackDto::contributors)
@@ -93,5 +110,16 @@ public class ArtistFacade {
                 .collect(Collectors.toList());
         artistDbService.saveArtists(artistsToSave);
         return artistsToSave.size();
+    }
+
+    private static void printStats(ArtistEntity artist) {
+        List<AlbumEntity> albums = Optional.ofNullable(artist.getAlbums())
+                .orElseGet(List::of);
+        int totalTracks = albums.stream()
+                .map(AlbumEntity::getTracks)
+                .filter(Objects::nonNull)
+                .mapToInt(List::size)
+                .sum();
+        log.info("Saved {}, {} albums, {} tracks", artist.getName(), albums.size(), totalTracks);
     }
 }

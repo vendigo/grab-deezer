@@ -23,8 +23,8 @@ public class ArtistEntity {
     private String name;
     @Column
     private String picture;
-    @Column
-    private Integer fans;
+    @Column(name = "nb_fans")
+    private Integer fansCount;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id")
     private List<AlbumEntity> albums;
@@ -36,4 +36,6 @@ public class ArtistEntity {
     private int priority;
     @Column(name = "created_date")
     private LocalDateTime createdDate;
+    @Column(name = "nb_albums")
+    private Integer albumsCount;
 }

@@ -21,7 +21,7 @@ public final class ArtistMapper {
 
     public static ArtistEntity mapPreloadArtist(ArtistDto dto) {
         return new ArtistEntity(dto.id(), dto.name(), dto.picture(), dto.fans(), null,
-                false, false, 0, LocalDateTime.now());
+                false, false, 0, LocalDateTime.now(), dto.albums());
     }
 
     public static List<TrackEntity> mapTracks(List<TrackDto> tracks) {
@@ -33,13 +33,13 @@ public final class ArtistMapper {
     public static List<AlbumEntity> mapAlbums(List<Pair<AlbumDto, List<TrackDto>>> albums) {
         return albums.stream()
                 .map(pair -> mapAlbum(pair.getFirst(), pair.getSecond()))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private static AlbumEntity mapAlbum(AlbumDto dto, List<TrackDto> tracks) {
         List<TrackEntity> mappedTracks = tracks.stream()
                 .map(ArtistMapper::mapTrack)
-                .toList();
+                .collect(Collectors.toList());
         return new AlbumEntity(dto.id(), dto.title(), dto.releaseDate(), mappedTracks);
     }
 
@@ -58,6 +58,6 @@ public final class ArtistMapper {
     }
 
     private static List<Long> mapContributorsId(List<ArtistDto> contributors) {
-        return contributors.stream().map(ArtistDto::id).toList();
+        return contributors.stream().map(ArtistDto::id).collect(Collectors.toList());
     }
 }

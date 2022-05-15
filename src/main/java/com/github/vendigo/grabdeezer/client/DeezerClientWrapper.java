@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -27,7 +28,13 @@ public class DeezerClientWrapper {
     private final DeezerClient deezerClient;
 
     public ArtistDto loadArtist(Long artistId) {
-        return rateLimited(() -> deezerClient.loadArtist(artistId));
+        ArtistDto artistDto = rateLimited(() -> deezerClient.loadArtist(artistId));
+
+        if (artistDto == null) {
+            log.warn("Unable to load {} artist", artistId);
+        }
+
+        return artistDto;
     }
 
     public ResultDto<AlbumDto> loadAlbums(Long artistId, Integer pageSize) {
@@ -53,13 +60,17 @@ public class DeezerClientWrapper {
     private <T extends ErrorAware> T rateLimited(Supplier<T> action, int multiplier) {
         if (bucket.tryConsume(1)) {
             T result = action.get();
-            if (result.error() == null) {
+            ErrorDto error = result.error();
+            if (error == null) {
                 return result;
             } else {
-                log.info("Hit error, sleeping x{}", multiplier);
+                if (Objects.equals(error.type(), "DataException")) {
+                    return null;
+                }
+                log.debug("Hit error, sleeping x{}", multiplier);
             }
         } else {
-            log.info("Hit rateLimit, sleeping x{}", multiplier);
+            log.debug("Hit rateLimit, sleeping x{}", multiplier);
         }
 
 

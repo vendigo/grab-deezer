@@ -6,7 +6,6 @@ import com.github.vendigo.grabdeezer.dto.ArtistDto;
 import com.github.vendigo.grabdeezer.dto.TrackDto;
 import com.github.vendigo.grabdeezer.entity.AlbumEntity;
 import com.github.vendigo.grabdeezer.entity.ArtistEntity;
-import com.github.vendigo.grabdeezer.entity.TrackEntity;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.util.Pair;
@@ -17,7 +16,6 @@ import reactor.core.scheduler.Schedulers;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -46,6 +44,10 @@ public class ArtistDeezerService {
                 .map(track -> deezerClient.loadTrack(track.id()))
                 .toList();
         return Pair.of(album, tracks);
+    }
+
+    public ArtistDto preloadArtist(long artistId) {
+        return deezerClient.loadArtist(artistId);
     }
 
     public List<ArtistEntity> preloadArtists(Set<Long> artistsId) {

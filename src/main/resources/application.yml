@@ -7,5 +7,6 @@ spring:
   jpa:
     generate-ddl: off
     show-sql: off
-
-
+logging:
+  group:
+    com.github.vendigo.grabdeezer: info

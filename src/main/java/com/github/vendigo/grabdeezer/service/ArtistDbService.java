@@ -1,8 +1,6 @@
 package com.github.vendigo.grabdeezer.service;
 
-import com.github.vendigo.grabdeezer.entity.AlbumEntity;
 import com.github.vendigo.grabdeezer.entity.ArtistEntity;
-import com.github.vendigo.grabdeezer.entity.ArtistQueueEntity;
 import com.github.vendigo.grabdeezer.entity.TrackEntity;
 import com.github.vendigo.grabdeezer.repository.ArtistQueueRepository;
 import com.github.vendigo.grabdeezer.repository.ArtistRepository;
@@ -13,7 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -27,15 +27,6 @@ public class ArtistDbService {
         artistRepository.saveAll(artists);
     }
 
-    public void addToQueue(Set<Long> artistId) {
-        Set<Long> notPresentIds = filterLoadedAndQueuedArtistIds(artistId);
-        log.info("Adding {} ids to the queue", notPresentIds.size());
-        List<ArtistQueueEntity> queueItems = notPresentIds.stream()
-                .map(ArtistQueueEntity::new)
-                .toList();
-        artistQueueRepository.saveAll(queueItems);
-    }
-
     public Set<Long> getArtistIdsFromQueue(int chunkSize) {
         return artistQueueRepository.findArtistIds(Pageable.ofSize(chunkSize)).toSet();
     }
@@ -43,12 +34,6 @@ public class ArtistDbService {
     public Set<Long> filterLoadedArtistIds(Set<Long> artistIds) {
         Set<Long> alreadyLoaded = artistRepository.findPresentIds(artistIds);
         return Sets.difference(artistIds, alreadyLoaded);
-    }
-
-    private Set<Long> filterLoadedAndQueuedArtistIds(Set<Long> artistIds) {
-        Set<Long> remaining = filterLoadedArtistIds(artistIds);
-        Set<Long> alreadyQueued = artistQueueRepository.findPresentIds(remaining);
-        return Sets.difference(remaining, alreadyQueued);
     }
 
     public void removeFromQueue(Collection<Long> artistIds) {
@@ -61,21 +46,6 @@ public class ArtistDbService {
 
     public long countArtistsToTopLoad() {
         return artistRepository.countArtists(false, false);
-    }
-
-    public long countArtistsToFullLoad() {
-        return artistRepository.countArtists(false, true);
-    }
-
-    private void printStats(ArtistEntity artist) {
-        List<AlbumEntity> albums = Optional.ofNullable(artist.getAlbums())
-                .orElseGet(List::of);
-        int totalTracks = albums.stream()
-                .map(AlbumEntity::getTracks)
-                .filter(Objects::nonNull)
-                .mapToInt(List::size)
-                .sum();
-        log.info("Saved {}, {} albums, {} tracks", artist.getName(), albums.size(), totalTracks);
     }
 
     public List<ArtistEntity> getArtistsToTopLoad(int topLoadChunkSize) {
@@ -94,5 +64,9 @@ public class ArtistDbService {
 
     public void flushArtists() {
         artistRepository.flush();
+    }
+
+    public List<ArtistEntity> getArtistsForEnriching(int chunkSize) {
+        return artistRepository.findArtistsForEnriching(Pageable.ofSize(chunkSize)).toList();
     }
 }
