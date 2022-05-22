@@ -38,4 +38,6 @@ public class ArtistEntity {
     private LocalDateTime createdDate;
     @Column(name = "nb_albums")
     private Integer albumsCount;
+    @Column(name = "loaded_to_graph")
+    private boolean graphLoaded;
 }

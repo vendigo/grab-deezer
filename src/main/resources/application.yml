@@ -6,7 +6,12 @@ spring:
     password: testpassword
   jpa:
     generate-ddl: off
-    show-sql: off
+    show-sql: true
+  neo4j:
+    uri: bolt://localhost:7687
+    authentication:
+      username: neo4j
+      password: neo4jPass
 logging:
   group:
-    com.github.vendigo.grabdeezer: info
+    com.github.vendigo.grabdeezer: debug

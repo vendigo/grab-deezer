@@ -69,4 +69,12 @@ public class ArtistDbService {
     public List<ArtistEntity> getArtistsForEnriching(int chunkSize) {
         return artistRepository.findArtistsForEnriching(Pageable.ofSize(chunkSize)).toList();
     }
+
+    public List<ArtistEntity> getArtistsForGraphLoad(int chunkSize) {
+        return artistRepository.findArtistsForGraphLoading(Pageable.ofSize(chunkSize)).toList();
+    }
+
+    public List<TrackEntity> getTracksForGraphLoad(int chunkSize) {
+        return trackRepository.findTracksForGraphLoading(Pageable.ofSize(chunkSize)).toList();
+    }
 }

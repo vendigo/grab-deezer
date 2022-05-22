@@ -5,6 +5,8 @@ import com.github.vendigo.grabdeezer.dto.TrackDto;
 import com.github.vendigo.grabdeezer.entity.AlbumEntity;
 import com.github.vendigo.grabdeezer.entity.ArtistEntity;
 import com.github.vendigo.grabdeezer.entity.TrackEntity;
+import com.github.vendigo.grabdeezer.graph.ArtistNode;
+import com.github.vendigo.grabdeezer.graph.repository.ArtistGraphRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,8 +25,11 @@ public class ArtistFacade {
     public static final int FULL_LOAD_CHUNK_SIZE = 1;
     public static final int ENRICH_FANS_CHUNK_SIZE = 50;
     private static final int TOP_LOAD_CHUNK_SIZE = 20;
+    private static final int GRAPH_LOAD_CHUNK_SIZE = 50;
+    private static final int TRACKS_GRAPH_LOAD_CHUNK_SIZE = 3;
     private final ArtistDeezerService artistDeezerService;
     private final ArtistDbService artistDbService;
+    private final ArtistGraphRepository artistGraphRepository;
 
     @Transactional
     public boolean fullLoadArtists() {
@@ -80,6 +85,40 @@ public class ArtistFacade {
     }
 
     @Transactional
+    public boolean loadToGraph() {
+        List<ArtistEntity> artists = artistDbService.getArtistsForGraphLoad(GRAPH_LOAD_CHUNK_SIZE);
+
+        if (artists.isEmpty()) {
+            log.info("No more artists to load");
+            return false;
+        }
+
+        List<ArtistNode> artistNodes = ArtistMapper.mapArtists(artists);
+        artistGraphRepository.saveAll(artistNodes);
+
+        artists.forEach(artist -> artist.setGraphLoaded(true));
+        artistDbService.saveArtists(artists);
+
+        log.info("{} artists loaded to graph", artists.size());
+
+        return true;
+    }
+
+    @Transactional
+    public boolean loadTracks() {
+        List<TrackEntity> tracks = artistDbService.getTracksForGraphLoad(TRACKS_GRAPH_LOAD_CHUNK_SIZE);
+
+        if (tracks.isEmpty()) {
+            log.info("No more tracks to load");
+            return false;
+        }
+
+        tracks.forEach(track -> log.info("Loaded track: {}", track));
+
+        return true;
+    }
+
+    @Transactional
     public boolean enrichArtists() {
         List<ArtistEntity> artists = artistDbService.getArtistsForEnriching(ENRICH_FANS_CHUNK_SIZE);
 
@@ -120,6 +159,6 @@ public class ArtistFacade {
                 .filter(Objects::nonNull)
                 .mapToInt(List::size)
                 .sum();
-        log.info("Saved {}, {} albums, {} tracks", artist.getName(), albums.size(), totalTracks);
+        log.info("Saved {}) {}, {} albums, {} tracks", artist.getId(), artist.getName(), albums.size(), totalTracks);
     }
 }

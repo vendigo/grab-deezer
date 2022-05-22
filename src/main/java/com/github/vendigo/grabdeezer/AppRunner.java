@@ -20,8 +20,10 @@ public class AppRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         //enrichArtists();
         //topLoad();
-        fullLoad();
+        //fullLoad();
         //preload();
+        //loadToGraph();
+        loadTracksToGraph();
     }
 
     private void preload() {
@@ -50,5 +52,13 @@ public class AppRunner implements ApplicationRunner {
         }
     }
 
+    private void loadToGraph() {
+        while (artistFacade.loadToGraph()) {
+        }
+    }
+
+    private void loadTracksToGraph() {
+        artistFacade.loadTracks();
+    }
 
 }
