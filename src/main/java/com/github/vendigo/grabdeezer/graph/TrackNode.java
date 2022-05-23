@@ -26,6 +26,6 @@ public class TrackNode {
     private String preview;
     @Property
     private LocalDate releaseDate;
-    @Relationship(type = "contribute", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "contribute", direction = Relationship.Direction.INCOMING)
     private List<ArtistNode> contributors;
 }

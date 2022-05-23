@@ -8,9 +8,11 @@ import com.github.vendigo.grabdeezer.repository.TrackRepository;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -74,7 +76,11 @@ public class ArtistDbService {
         return artistRepository.findArtistsForGraphLoading(Pageable.ofSize(chunkSize)).toList();
     }
 
-    public List<TrackEntity> getTracksForGraphLoad(int chunkSize) {
-        return trackRepository.findTracksForGraphLoading(Pageable.ofSize(chunkSize)).toList();
+    public List<TrackEntity> getTracksForGraphLoad(int chunkSize, int page) {
+        List<Long> trackIds = trackRepository.findTrackIdsForGraphLoading(PageRequest.of(page, chunkSize))
+                .stream()
+                .map(BigInteger::longValue)
+                .toList();
+        return trackRepository.findAllById(trackIds);
     }
 }

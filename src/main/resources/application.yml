@@ -6,7 +6,7 @@ spring:
     password: testpassword
   jpa:
     generate-ddl: off
-    show-sql: true
+    show-sql: false
   neo4j:
     uri: bolt://localhost:7687
     authentication:

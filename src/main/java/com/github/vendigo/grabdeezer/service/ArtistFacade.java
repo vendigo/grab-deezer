@@ -24,12 +24,14 @@ public class ArtistFacade {
     public static final int PRELOAD_CHUNK_SIZE = 45;
     public static final int FULL_LOAD_CHUNK_SIZE = 1;
     public static final int ENRICH_FANS_CHUNK_SIZE = 50;
+    public static final int TRACKS_GRAPH_LOAD_CHUNK_SIZE = 20;
     private static final int TOP_LOAD_CHUNK_SIZE = 20;
     private static final int GRAPH_LOAD_CHUNK_SIZE = 50;
-    private static final int TRACKS_GRAPH_LOAD_CHUNK_SIZE = 3;
+
     private final ArtistDeezerService artistDeezerService;
     private final ArtistDbService artistDbService;
     private final ArtistGraphRepository artistGraphRepository;
+    private final TrackGraphService trackGraphService;
 
     @Transactional
     public boolean fullLoadArtists() {
@@ -105,15 +107,15 @@ public class ArtistFacade {
     }
 
     @Transactional
-    public boolean loadTracks() {
-        List<TrackEntity> tracks = artistDbService.getTracksForGraphLoad(TRACKS_GRAPH_LOAD_CHUNK_SIZE);
+    public boolean loadTracks(int page) {
+        List<TrackEntity> tracks = artistDbService.getTracksForGraphLoad(TRACKS_GRAPH_LOAD_CHUNK_SIZE, page);
 
         if (tracks.isEmpty()) {
             log.info("No more tracks to load");
             return false;
         }
 
-        tracks.forEach(track -> log.info("Loaded track: {}", track));
+        trackGraphService.saveTracksToGraph(tracks);
 
         return true;
     }
