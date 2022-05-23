@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -76,11 +77,14 @@ public class ArtistDbService {
         return artistRepository.findArtistsForGraphLoading(Pageable.ofSize(chunkSize)).toList();
     }
 
-    public List<TrackEntity> getTracksForGraphLoad(int chunkSize, int page) {
+    public List<TrackEntity> getTracksForGraphLoad(int chunkSize, int page, StopWatch watch) {
+        watch.start("Load trackIds page");
         List<Long> trackIds = trackRepository.findTrackIdsForGraphLoading(PageRequest.of(page, chunkSize))
                 .stream()
                 .map(BigInteger::longValue)
                 .toList();
+        watch.stop();
+        watch.start("Load Tracks by ids");
         return trackRepository.findAllById(trackIds);
     }
 }

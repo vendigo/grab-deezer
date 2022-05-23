@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StopWatch;
 
 import java.util.*;
 import java.util.function.Function;
@@ -24,7 +25,7 @@ public class ArtistFacade {
     public static final int PRELOAD_CHUNK_SIZE = 45;
     public static final int FULL_LOAD_CHUNK_SIZE = 1;
     public static final int ENRICH_FANS_CHUNK_SIZE = 50;
-    public static final int TRACKS_GRAPH_LOAD_CHUNK_SIZE = 20;
+    public static final int TRACKS_GRAPH_LOAD_CHUNK_SIZE = 100;
     private static final int TOP_LOAD_CHUNK_SIZE = 20;
     private static final int GRAPH_LOAD_CHUNK_SIZE = 50;
 
@@ -108,14 +109,17 @@ public class ArtistFacade {
 
     @Transactional
     public boolean loadTracks(int page) {
-        List<TrackEntity> tracks = artistDbService.getTracksForGraphLoad(TRACKS_GRAPH_LOAD_CHUNK_SIZE, page);
+        StopWatch watch = new StopWatch();
+        List<TrackEntity> tracks = artistDbService.getTracksForGraphLoad(TRACKS_GRAPH_LOAD_CHUNK_SIZE, page, watch);
+        watch.stop();
 
         if (tracks.isEmpty()) {
             log.info("No more tracks to load");
             return false;
         }
 
-        trackGraphService.saveTracksToGraph(tracks);
+        trackGraphService.saveTracksToGraph(tracks, watch);
+        log.info(watch.prettyPrint());
 
         return true;
     }

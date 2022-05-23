@@ -58,7 +58,7 @@ public class AppRunner implements ApplicationRunner {
     }
 
     private void loadTracksToGraph() {
-        int page = 0;
+        int page = 25;
         while (artistFacade.loadTracks(page)) {
             log.info("Loaded page {} of tracks", page++);
         }

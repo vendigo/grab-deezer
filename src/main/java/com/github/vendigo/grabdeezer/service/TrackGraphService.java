@@ -7,6 +7,7 @@ import com.github.vendigo.grabdeezer.graph.repository.ArtistGraphRepository;
 import com.github.vendigo.grabdeezer.graph.repository.TrackGraphRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,17 +23,21 @@ public class TrackGraphService {
     private final ArtistGraphRepository artistGraphRepository;
     private final TrackGraphRepository trackGraphRepository;
 
-    void saveTracksToGraph(List<TrackEntity> tracks) {
+    void saveTracksToGraph(List<TrackEntity> tracks, StopWatch watch) {
         List<Long> artistIds = tracks.stream()
                 .map(TrackEntity::getContributorsIds)
                 .flatMap(Collection::stream)
                 .toList();
+        watch.start("Load artists from graph");
         Map<Long, ArtistNode> artistsById = artistGraphRepository.findAllById(artistIds).stream()
                 .collect(Collectors.toMap(ArtistNode::getId, Function.identity()));
+        watch.stop();
         List<TrackNode> trackNodes = tracks.stream()
                 .map(track -> mapTrack(track, artistsById))
                 .collect(Collectors.toList());
+        watch.start("Save tracks");
         trackGraphRepository.saveAll(trackNodes);
+        watch.stop();
     }
 
     private TrackNode mapTrack(TrackEntity track, Map<Long, ArtistNode> artistIds) {
