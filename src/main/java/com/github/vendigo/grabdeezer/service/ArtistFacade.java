@@ -5,13 +5,10 @@ import com.github.vendigo.grabdeezer.dto.TrackDto;
 import com.github.vendigo.grabdeezer.entity.AlbumEntity;
 import com.github.vendigo.grabdeezer.entity.ArtistEntity;
 import com.github.vendigo.grabdeezer.entity.TrackEntity;
-import com.github.vendigo.grabdeezer.graph.ArtistNode;
-import com.github.vendigo.grabdeezer.graph.repository.ArtistGraphRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StopWatch;
 
 import java.util.*;
 import java.util.function.Function;
@@ -25,14 +22,10 @@ public class ArtistFacade {
     public static final int PRELOAD_CHUNK_SIZE = 45;
     public static final int FULL_LOAD_CHUNK_SIZE = 1;
     public static final int ENRICH_FANS_CHUNK_SIZE = 50;
-    public static final int TRACKS_GRAPH_LOAD_CHUNK_SIZE = 100;
     private static final int TOP_LOAD_CHUNK_SIZE = 20;
-    private static final int GRAPH_LOAD_CHUNK_SIZE = 50;
 
     private final ArtistDeezerService artistDeezerService;
     private final ArtistDbService artistDbService;
-    private final ArtistGraphRepository artistGraphRepository;
-    private final TrackGraphService trackGraphService;
 
     @Transactional
     public boolean fullLoadArtists() {
@@ -85,43 +78,6 @@ public class ArtistFacade {
         long artistsToLoad = artistDbService.countArtistsToTopLoad();
         log.info("{} new artists saved, {} to process", savedNew, artistsToLoad);
         return artistsToLoad;
-    }
-
-    @Transactional
-    public boolean loadToGraph() {
-        List<ArtistEntity> artists = artistDbService.getArtistsForGraphLoad(GRAPH_LOAD_CHUNK_SIZE);
-
-        if (artists.isEmpty()) {
-            log.info("No more artists to load");
-            return false;
-        }
-
-        List<ArtistNode> artistNodes = ArtistMapper.mapArtists(artists);
-        artistGraphRepository.saveAll(artistNodes);
-
-        artists.forEach(artist -> artist.setGraphLoaded(true));
-        artistDbService.saveArtists(artists);
-
-        log.info("{} artists loaded to graph", artists.size());
-
-        return true;
-    }
-
-    @Transactional
-    public boolean loadTracks(int page) {
-        StopWatch watch = new StopWatch();
-        List<TrackEntity> tracks = artistDbService.getTracksForGraphLoad(TRACKS_GRAPH_LOAD_CHUNK_SIZE, page, watch);
-        watch.stop();
-
-        if (tracks.isEmpty()) {
-            log.info("No more tracks to load");
-            return false;
-        }
-
-        trackGraphService.saveTracksToGraph(tracks, watch);
-        log.info(watch.prettyPrint());
-
-        return true;
     }
 
     @Transactional

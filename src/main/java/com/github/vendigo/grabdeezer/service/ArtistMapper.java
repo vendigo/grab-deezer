@@ -6,7 +6,6 @@ import com.github.vendigo.grabdeezer.dto.TrackDto;
 import com.github.vendigo.grabdeezer.entity.AlbumEntity;
 import com.github.vendigo.grabdeezer.entity.ArtistEntity;
 import com.github.vendigo.grabdeezer.entity.TrackEntity;
-import com.github.vendigo.grabdeezer.graph.ArtistNode;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.data.util.Pair;
@@ -35,21 +34,6 @@ public final class ArtistMapper {
         return albums.stream()
                 .map(pair -> mapAlbum(pair.getFirst(), pair.getSecond()))
                 .collect(Collectors.toList());
-    }
-
-    public static List<ArtistNode> mapArtists(List<ArtistEntity> artists) {
-        return artists.stream()
-                .map(ArtistMapper::mapArtist)
-                .collect(Collectors.toList());
-    }
-
-    public static ArtistNode mapArtist(ArtistEntity artist) {
-        return new ArtistNode(
-                artist.getId(),
-                artist.getName(),
-                artist.getPicture(),
-                artist.getFansCount()
-        );
     }
 
     private static AlbumEntity mapAlbum(AlbumDto dto, List<TrackDto> tracks) {

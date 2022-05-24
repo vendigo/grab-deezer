@@ -4,13 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
-
-import static com.github.vendigo.grabdeezer.service.ArtistFacade.TRACKS_GRAPH_LOAD_CHUNK_SIZE;
 
 @Getter
 @AllArgsConstructor
@@ -30,8 +27,7 @@ public class TrackEntity {
     @Column(name = "release_date")
     private LocalDate releaseDate;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @BatchSize(size = TRACKS_GRAPH_LOAD_CHUNK_SIZE)
+    @ElementCollection
     @CollectionTable(
             name = "dez_contributor",
             joinColumns = @JoinColumn(name = "track_id")

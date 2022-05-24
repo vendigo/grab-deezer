@@ -30,7 +30,4 @@ public interface ArtistRepository extends JpaRepository<ArtistEntity, Long> {
 
     @Query("SELECT artist FROM ArtistEntity artist WHERE artist.fansCount IS NULL OR artist.albumsCount IS NULL")
     Page<ArtistEntity> findArtistsForEnriching(Pageable pageable);
-
-    @Query("SELECT artist FROM ArtistEntity artist WHERE artist.graphLoaded = false ORDER BY artist.priority DESC, artist.fansCount desc")
-    Page<ArtistEntity> findArtistsForGraphLoading(Pageable pageable);
 }

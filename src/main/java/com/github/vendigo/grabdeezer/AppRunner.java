@@ -22,8 +22,6 @@ public class AppRunner implements ApplicationRunner {
         //topLoad();
         //fullLoad();
         //preload();
-        //loadToGraph();
-        loadTracksToGraph();
     }
 
     private void preload() {
@@ -49,18 +47,6 @@ public class AppRunner implements ApplicationRunner {
     private void enrichArtists() {
         while (artistFacade.enrichArtists()) {
             log.info("Enriched fans for {} artists", ENRICH_FANS_CHUNK_SIZE);
-        }
-    }
-
-    private void loadToGraph() {
-        while (artistFacade.loadToGraph()) {
-        }
-    }
-
-    private void loadTracksToGraph() {
-        int page = 25;
-        while (artistFacade.loadTracks(page)) {
-            log.info("Loaded page {} of tracks", page++);
         }
     }
 

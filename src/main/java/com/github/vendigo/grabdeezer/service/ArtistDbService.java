@@ -8,12 +8,9 @@ import com.github.vendigo.grabdeezer.repository.TrackRepository;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 
-import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -71,20 +68,5 @@ public class ArtistDbService {
 
     public List<ArtistEntity> getArtistsForEnriching(int chunkSize) {
         return artistRepository.findArtistsForEnriching(Pageable.ofSize(chunkSize)).toList();
-    }
-
-    public List<ArtistEntity> getArtistsForGraphLoad(int chunkSize) {
-        return artistRepository.findArtistsForGraphLoading(Pageable.ofSize(chunkSize)).toList();
-    }
-
-    public List<TrackEntity> getTracksForGraphLoad(int chunkSize, int page, StopWatch watch) {
-        watch.start("Load trackIds page");
-        List<Long> trackIds = trackRepository.findTrackIdsForGraphLoading(PageRequest.of(page, chunkSize))
-                .stream()
-                .map(BigInteger::longValue)
-                .toList();
-        watch.stop();
-        watch.start("Load Tracks by ids");
-        return trackRepository.findAllById(trackIds);
     }
 }
