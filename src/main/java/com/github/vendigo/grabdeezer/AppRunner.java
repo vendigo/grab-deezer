@@ -20,8 +20,9 @@ public class AppRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         //enrichArtists();
         //topLoad();
-        //fullLoad();
+        fullLoad();
         //preload();
+        //loadChart();
     }
 
     private void preload() {
@@ -41,6 +42,12 @@ public class AppRunner implements ApplicationRunner {
 
     private void fullLoad() {
         while (artistFacade.fullLoadArtists()) {
+        }
+    }
+
+    private void loadChart() {
+        for (int page = 0; page < 3; page++) {
+            artistFacade.loadChartArtists(page);
         }
     }
 

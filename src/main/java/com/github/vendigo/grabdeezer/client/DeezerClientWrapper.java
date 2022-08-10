@@ -53,6 +53,10 @@ public class DeezerClientWrapper {
         return rateLimited(() -> deezerClient.loadTopTracks(artistId, pageSize));
     }
 
+    public ResultDto<ArtistDto> loadChartArtists(Integer pageSize, Integer pageNum) {
+        return rateLimited(() -> deezerClient.loadChartArtists(pageSize, pageNum * pageSize));
+    }
+
     private <T extends ErrorAware> T rateLimited(Supplier<T> action) {
         return rateLimited(action, 1);
     }

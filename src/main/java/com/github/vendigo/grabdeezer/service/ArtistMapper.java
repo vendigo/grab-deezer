@@ -19,9 +19,11 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ArtistMapper {
 
+    private static final int MAX_POSITION = 301;
+
     public static ArtistEntity mapPreloadArtist(ArtistDto dto) {
         return new ArtistEntity(dto.id(), dto.name(), dto.picture(), dto.fans(), null,
-                false, false, 0, LocalDateTime.now(), dto.albums(), false);
+                false, false, mapPriority(dto.position()), LocalDateTime.now(), dto.albums());
     }
 
     public static List<TrackEntity> mapTracks(List<TrackDto> tracks) {
@@ -46,6 +48,14 @@ public final class ArtistMapper {
     private static TrackEntity mapTrack(TrackDto dto) {
         return new TrackEntity(dto.id(), dto.title(), dto.duration(), dto.preview(),
                 parseDate(dto.releaseDate()), mapContributorsId(dto.contributors()));
+    }
+
+    private static int mapPriority(@Nullable Integer position) {
+        if (position == null) {
+            return 0;
+        }
+
+        return Math.max(MAX_POSITION - position, 0);
     }
 
     @Nullable

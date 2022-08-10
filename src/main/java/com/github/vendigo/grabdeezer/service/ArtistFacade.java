@@ -123,4 +123,41 @@ public class ArtistFacade {
                 .sum();
         log.info("Saved {}) {}, {} albums, {} tracks", artist.getId(), artist.getName(), albums.size(), totalTracks);
     }
+
+    @Transactional
+    public void loadChartArtists(int page) {
+        List<ArtistEntity> chartArtists = artistDeezerService.loadChartArtists(page).stream()
+                .map(ArtistMapper::mapPreloadArtist)
+                .toList();
+        Set<Long> chartArtistIds = collectArtistIds(chartArtists);
+        List<ArtistEntity> dbArtists = artistDbService.loadArtistsByIds(chartArtistIds);
+        Set<Long> dbArtistIds = collectArtistIds(dbArtists);
+
+        Map<Boolean, List<ArtistEntity>> chartArtistsByPresenceFlag = chartArtists.stream()
+                .collect(Collectors.partitioningBy(artist -> dbArtistIds.contains(artist.getId())));
+        updatePriority(chartArtistsByPresenceFlag.get(Boolean.TRUE), dbArtists);
+        createArtists(chartArtistsByPresenceFlag.get(Boolean.FALSE));
+    }
+
+    private void createArtists(List<ArtistEntity> newChartArtists) {
+        log.info("Saving {} new chart artists", newChartArtists.size());
+        artistDbService.saveArtists(newChartArtists);
+    }
+
+    private void updatePriority(List<ArtistEntity> chartArtists, List<ArtistEntity> dbArtists) {
+        log.info("Updating priority for {} chart artists", chartArtists.size());
+        Map<Long, ArtistEntity> chartArtistsById = chartArtists.stream()
+                .collect(Collectors.toMap(ArtistEntity::getId, Function.identity()));
+        dbArtists.forEach(artist -> {
+            ArtistEntity chartArtist = chartArtistsById.get(artist.getId());
+            artist.setPriority(chartArtist.getPriority());
+        });
+        artistDbService.saveArtists(dbArtists);
+    }
+
+    private Set<Long> collectArtistIds(List<ArtistEntity> artists) {
+        return artists.stream()
+                .map(ArtistEntity::getId)
+                .collect(Collectors.toSet());
+    }
 }

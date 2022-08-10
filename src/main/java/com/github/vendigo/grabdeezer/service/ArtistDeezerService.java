@@ -68,11 +68,13 @@ public class ArtistDeezerService {
                 .block();
     }
 
+    public List<ArtistDto> loadChartArtists(int page) {
+        return deezerClient.loadChartArtists(DEFAULT_PAGE_SIZE, page).data();
+    }
+
     private List<TrackDto> loadArtistTopTracks(ArtistEntity artist) {
         Long artistId = artist.getId();
         artist.setTopLoaded(true);
         return deezerClient.loadTopTracks(artistId, DEFAULT_PAGE_SIZE).data();
     }
-
-
 }
