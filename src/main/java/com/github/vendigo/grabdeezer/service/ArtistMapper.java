@@ -23,7 +23,7 @@ public final class ArtistMapper {
 
     public static ArtistEntity mapPreloadArtist(ArtistDto dto) {
         return new ArtistEntity(dto.id(), dto.name(), dto.picture(), dto.fans(), null,
-                false, false, mapPriority(dto.position()), LocalDateTime.now(), dto.albums());
+                false, false, mapPriority(dto.position()), LocalDateTime.now(), dto.albums(), false);
     }
 
     public static List<TrackEntity> mapTracks(List<TrackDto> tracks) {

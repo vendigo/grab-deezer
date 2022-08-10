@@ -38,4 +38,6 @@ public class ArtistEntity {
     private LocalDateTime createdDate;
     @Column(name = "nb_albums")
     private Integer albumsCount;
+    @Column(name = "failed_to_load")
+    private boolean failedToLoad;
 }

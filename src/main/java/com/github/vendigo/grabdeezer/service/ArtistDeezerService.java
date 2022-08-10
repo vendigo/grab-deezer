@@ -27,15 +27,20 @@ public class ArtistDeezerService {
     private final DeezerClientWrapper deezerClient;
 
     public ArtistEntity loadArtist(ArtistEntity artist) {
-        List<Pair<AlbumDto, List<TrackDto>>> albums = deezerClient.loadAlbums(artist.getId(), DEFAULT_PAGE_SIZE)
-                .data()
-                .stream()
-                .map(this::loadAlbumTracks)
-                .toList();
-        List<AlbumEntity> albumEntities = ArtistMapper.mapAlbums(albums);
-        artist.setAlbums(albumEntities);
-        artist.setCreatedDate(LocalDateTime.now());
-        artist.setFullLoaded(true);
+        try {
+            List<Pair<AlbumDto, List<TrackDto>>> albums = deezerClient.loadAlbums(artist.getId(), DEFAULT_PAGE_SIZE)
+                    .data()
+                    .stream()
+                    .map(this::loadAlbumTracks)
+                    .toList();
+            List<AlbumEntity> albumEntities = ArtistMapper.mapAlbums(albums);
+            artist.setAlbums(albumEntities);
+            artist.setCreatedDate(LocalDateTime.now());
+            artist.setFullLoaded(true);
+        } catch (Exception ex) {
+            artist.setFailedToLoad(true);
+        }
+
         return artist;
     }
 

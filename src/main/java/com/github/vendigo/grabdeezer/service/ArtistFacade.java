@@ -114,6 +114,11 @@ public class ArtistFacade {
     }
 
     private static void printStats(ArtistEntity artist) {
+        if (artist.isFailedToLoad()) {
+            log.warn("Failed to load artist: {}) {}", artist.getId(), artist.getName());
+            return;
+        }
+
         List<AlbumEntity> albums = Optional.ofNullable(artist.getAlbums())
                 .orElseGet(List::of);
         int totalTracks = albums.stream()

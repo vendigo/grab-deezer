@@ -17,12 +17,17 @@ public interface ArtistRepository extends JpaRepository<ArtistEntity, Long> {
 
     @Query("""
             SELECT artist FROM ArtistEntity artist WHERE
-             artist.fullLoaded = :fullLoaded AND artist.topLoaded = :topLoaded
+             artist.fullLoaded = false AND artist.failedToLoad = false
              ORDER BY artist.priority DESC, artist.fansCount DESC NULLS LAST
             """)
-    Page<ArtistEntity> findArtistsToLoad(@Param("fullLoaded") boolean fullLoaded,
-                                         @Param("topLoaded") boolean topLoaded,
-                                         Pageable pageable);
+    Page<ArtistEntity> findArtistsForFullLoad(Pageable pageable);
+
+    @Query("""
+            SELECT artist FROM ArtistEntity artist WHERE
+             artist.fullLoaded = false AND artist.topLoaded = false AND artist.failedToLoad = false
+             ORDER BY artist.priority DESC, artist.fansCount DESC NULLS LAST
+            """)
+    Page<ArtistEntity> findArtistsForTopLoad(Pageable pageable);
 
     @Query("SELECT count(artist) FROM ArtistEntity artist WHERE " +
             "artist.fullLoaded = :fullLoaded AND artist.topLoaded = :topLoaded")

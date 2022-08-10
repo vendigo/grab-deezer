@@ -49,13 +49,11 @@ public class ArtistDbService {
     }
 
     public List<ArtistEntity> getArtistsToTopLoad(int topLoadChunkSize) {
-        return artistRepository.findArtistsToLoad(false, false,
-                Pageable.ofSize(topLoadChunkSize)).toList();
+        return artistRepository.findArtistsForTopLoad(Pageable.ofSize(topLoadChunkSize)).toList();
     }
 
     public List<ArtistEntity> getArtistsToFullLoad(int chunkSize) {
-        return artistRepository.findArtistsToLoad(false, true,
-                Pageable.ofSize(chunkSize)).toList();
+        return artistRepository.findArtistsForFullLoad(Pageable.ofSize(chunkSize)).toList();
     }
 
     public void saveTracks(List<TrackEntity> tracks) {

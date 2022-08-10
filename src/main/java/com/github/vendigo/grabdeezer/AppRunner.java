@@ -18,11 +18,13 @@ public class AppRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        //loadChart();
+        //preload();
         //enrichArtists();
         //topLoad();
         fullLoad();
-        //preload();
-        //loadChart();
+
+
     }
 
     private void preload() {
