@@ -1,69 +1,52 @@
-create table dez_artist_queue
-(
-    id               serial
-        constraint dez_artist_queue_pk
-            primary key,
-    deezer_artist_id integer
-);
-
-alter table dez_artist_queue
-    owner to postgres;
-
-create unique index dez_artist_queue_artistid_uindex
-    on dez_artist_queue (id);
-
 create table dez_artist
 (
-    name      varchar,
-    picture   varchar,
-    fans      integer,
-    deezer_id integer not null
-        constraint dez_artist_pk
-            primary key
+    id               bigint not null primary key,
+    nb_fans          integer,
+    name             varchar(1000),
+    picture          varchar(1000),
+    full_loaded      boolean   default false,
+    top_loaded       boolean   default false,
+    priority         integer   default 0,
+    last_update_time timestamp default now(),
+    nb_albums        integer,
+    failed_to_load   boolean   default false
 );
-
-alter table dez_artist
-    owner to postgres;
 
 create table dez_album
 (
-    title        varchar,
+    id           bigint not null primary key,
     release_date date,
-    artist_id    integer
-        constraint dez_album_dez_artist_deezer_id_fk
-            references dez_artist,
-    deezer_id    integer not null
-        constraint dez_album_pk
-            primary key
+    title        varchar(255),
+    artist_id    bigint
+        constraint dez_album_dez_artist_fk references dez_artist
 );
 
-alter table dez_album
-    owner to postgres;
+create table dez_artist_queue
+(
+    artist_id bigint not null primary key
+);
 
 create table dez_track
 (
-    id           serial
-        constraint dez_track_pk
-            primary key,
-    title        varchar,
+    id           bigint not null primary key,
     duration     integer,
-    preview      varchar,
+    preview      varchar(1000),
     release_date date,
-    album_id     integer,
-    deezer_id    integer
+    title        varchar(1000),
+    album_id     bigint
+        constraint dez_track_dez_album_fk references dez_album,
+    created_date timestamp default now()
 );
-
-alter table dez_track
-    owner to postgres;
 
 create table dez_contributor
 (
-    track_id  integer not null
-        constraint dez_contributor_dez_track_id_fk
-            references dez_track,
-    artist_id integer not null
+    track_id  bigint not null
+        constraint dez_contributor_dez_track_fk references dez_track,
+    artist_id bigint
 );
 
-alter table dez_contributor
-    owner to postgres;
-
+alter table dez_contributor owner to postgres;
+alter table dez_track owner to postgres;
+alter table dez_artist_queue owner to postgres;
+alter table dez_album owner to postgres;
+alter table dez_artist owner to postgres;

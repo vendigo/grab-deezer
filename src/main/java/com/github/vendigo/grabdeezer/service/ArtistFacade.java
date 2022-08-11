@@ -5,27 +5,31 @@ import com.github.vendigo.grabdeezer.dto.TrackDto;
 import com.github.vendigo.grabdeezer.entity.AlbumEntity;
 import com.github.vendigo.grabdeezer.entity.ArtistEntity;
 import com.github.vendigo.grabdeezer.entity.TrackEntity;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ArtistFacade {
 
     public static final int PRELOAD_CHUNK_SIZE = 45;
     public static final int FULL_LOAD_CHUNK_SIZE = 1;
+    public static final int UPDATE_CHUNK_SIZE = 1;
     public static final int ENRICH_FANS_CHUNK_SIZE = 50;
     private static final int TOP_LOAD_CHUNK_SIZE = 20;
-
     private final ArtistDeezerService artistDeezerService;
     private final ArtistDbService artistDbService;
+    @Value("${update.period.days}")
+    private int updatePeriodDays;
 
     @Transactional
     public boolean fullLoadArtists() {
@@ -107,6 +111,7 @@ public class ArtistFacade {
         Set<Long> missingArtistIds = artistDbService.filterLoadedArtistIds(artistsById.keySet());
         List<ArtistEntity> artistsToSave = artistsById.values().stream()
                 .filter(artist -> missingArtistIds.contains(artist.id()))
+                .map(artist -> artistDeezerService.preloadArtist(artist.id()))
                 .map(ArtistMapper::mapPreloadArtist)
                 .collect(Collectors.toList());
         artistDbService.saveArtists(artistsToSave);
@@ -164,5 +169,23 @@ public class ArtistFacade {
         return artists.stream()
                 .map(ArtistEntity::getId)
                 .collect(Collectors.toSet());
+    }
+
+    @Transactional
+    public boolean loadUpdates() {
+        LocalDate updateDate = LocalDate.now().minusDays(updatePeriodDays);
+        List<ArtistEntity> artists = artistDbService.getArtistsForUpdateLoad(updateDate, UPDATE_CHUNK_SIZE);
+
+        if (artists.isEmpty()) {
+            log.info("No more artists to update");
+            return false;
+        }
+
+        List<ArtistEntity> fullArtists = artists.stream()
+                .map(artistDeezerService::updateArtist)
+                .collect(Collectors.toList());
+        artistDbService.saveArtists(fullArtists);
+
+        return true;
     }
 }

@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Set;
 
@@ -28,6 +30,13 @@ public interface ArtistRepository extends JpaRepository<ArtistEntity, Long> {
              ORDER BY artist.priority DESC, artist.fansCount DESC NULLS LAST
             """)
     Page<ArtistEntity> findArtistsForTopLoad(Pageable pageable);
+
+    @Query("""
+            SELECT artist FROM ArtistEntity artist WHERE
+             artist.lastUpdateTime < :updateTime AND artist.fullLoaded = true
+             ORDER BY artist.priority DESC, artist.fansCount DESC NULLS LAST
+            """)
+    Page<ArtistEntity> findArtistsForUpdate(@Param("updateTime") LocalDateTime updateTime, Pageable pageable);
 
     @Query("SELECT count(artist) FROM ArtistEntity artist WHERE " +
             "artist.fullLoaded = :fullLoaded AND artist.topLoaded = :topLoaded")

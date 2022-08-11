@@ -16,7 +16,7 @@ public interface DeezerClient {
     ArtistDto loadArtist(@PathVariable("artistId") Long artistId);
 
     @GetMapping("artist/{artistId}/albums")
-    ResultDto<AlbumDto> loadAlbums(@PathVariable("artistId") Long artistId, @RequestParam("limit") Integer limit);
+    ResultDto<AlbumDto> loadAlbums(@PathVariable("artistId") Long artistId, @RequestParam("limit") Integer limit, @RequestParam("index") Integer index);
 
     @GetMapping("album/{albumId}/tracks")
     ResultDto<TrackDto> loadTracks(@PathVariable("albumId") Long albumId);

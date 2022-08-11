@@ -22,8 +22,8 @@ public class AppRunner implements ApplicationRunner {
         //preload();
         //enrichArtists();
         //topLoad();
-        fullLoad();
-
+        //fullLoad();
+        loadUpdates();
 
     }
 
@@ -44,6 +44,11 @@ public class AppRunner implements ApplicationRunner {
 
     private void fullLoad() {
         while (artistFacade.fullLoadArtists()) {
+        }
+    }
+
+    private void loadUpdates() {
+        while (artistFacade.loadUpdates()) {
         }
     }
 

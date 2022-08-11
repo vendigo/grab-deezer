@@ -34,8 +34,8 @@ public class ArtistEntity {
     private boolean topLoaded;
     @Column
     private int priority;
-    @Column(name = "created_date")
-    private LocalDateTime createdDate;
+    @Column(name = "last_update_time")
+    private LocalDateTime lastUpdateTime;
     @Column(name = "nb_albums")
     private Integer albumsCount;
     @Column(name = "failed_to_load")

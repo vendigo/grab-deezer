@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -54,6 +55,10 @@ public class ArtistDbService {
 
     public List<ArtistEntity> getArtistsToFullLoad(int chunkSize) {
         return artistRepository.findArtistsForFullLoad(Pageable.ofSize(chunkSize)).toList();
+    }
+
+    public List<ArtistEntity> getArtistsForUpdateLoad(LocalDate updateDate, int chunkSize) {
+        return artistRepository.findArtistsForUpdate(updateDate.atStartOfDay(), Pageable.ofSize(chunkSize)).toList();
     }
 
     public void saveTracks(List<TrackEntity> tracks) {

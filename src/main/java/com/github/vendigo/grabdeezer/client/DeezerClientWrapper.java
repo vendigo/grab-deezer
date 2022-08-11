@@ -37,8 +37,8 @@ public class DeezerClientWrapper {
         return artistDto;
     }
 
-    public ResultDto<AlbumDto> loadAlbums(Long artistId, Integer pageSize) {
-        return rateLimited(() -> deezerClient.loadAlbums(artistId, pageSize));
+    public ResultDto<AlbumDto> loadAlbums(Long artistId, Integer pageSize, Integer pageNum) {
+        return rateLimited(() -> deezerClient.loadAlbums(artistId, pageSize, pageNum * pageSize));
     }
 
     public ResultDto<TrackDto> loadTracks(Long albumId) {
