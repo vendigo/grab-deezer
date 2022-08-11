@@ -17,11 +17,11 @@ public class AppRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        //loadChart();
+        loadChart();
         //preload();
         //topLoad();
         //fullLoad();
-        loadUpdates();
+        //loadUpdates();
     }
 
     private void preload() {

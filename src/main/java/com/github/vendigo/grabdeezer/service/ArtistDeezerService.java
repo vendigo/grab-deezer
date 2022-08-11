@@ -105,14 +105,13 @@ public class ArtistDeezerService {
 
     public ArtistEntity updateArtist(ArtistEntity artist) {
         log.info("About to update artist: {}", artist.getName());
-        ArtistDto latestDto = deezerClient.loadArtist(artist.getId());
-
-        artist.setFansCount(latestDto.fans());
-        artist.setName(latestDto.name());
-        artist.setPicture(latestDto.picture());
-        artist.setAlbumsCount(latestDto.albums());
-
         try {
+            ArtistDto latestDto = deezerClient.loadArtist(artist.getId());
+            artist.setFansCount(latestDto.fans());
+            artist.setName(latestDto.name());
+            artist.setPicture(latestDto.picture());
+            artist.setAlbumsCount(latestDto.albums());
+
             Set<Long> existentAlbumsIds = artist.getAlbums().stream()
                     .map(AlbumEntity::getId)
                     .collect(Collectors.toSet());
@@ -130,7 +129,6 @@ public class ArtistDeezerService {
         } catch (Exception ex) {
             log.error("Unable to update artist: {}) {}", artist.getId(), artist.getName(), ex);
         }
-
 
         artist.setLastUpdateTime(LocalDateTime.now());
         return artist;
