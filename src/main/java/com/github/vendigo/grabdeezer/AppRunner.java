@@ -7,7 +7,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import static com.github.vendigo.grabdeezer.service.ArtistFacade.ENRICH_FANS_CHUNK_SIZE;
 import static com.github.vendigo.grabdeezer.service.ArtistFacade.PRELOAD_CHUNK_SIZE;
 
 @Component
@@ -20,11 +19,9 @@ public class AppRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         //loadChart();
         //preload();
-        //enrichArtists();
         //topLoad();
         //fullLoad();
         loadUpdates();
-
     }
 
     private void preload() {
@@ -55,12 +52,6 @@ public class AppRunner implements ApplicationRunner {
     private void loadChart() {
         for (int page = 0; page < 3; page++) {
             artistFacade.loadChartArtists(page);
-        }
-    }
-
-    private void enrichArtists() {
-        while (artistFacade.enrichArtists()) {
-            log.info("Enriched fans for {} artists", ENRICH_FANS_CHUNK_SIZE);
         }
     }
 

@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Set;
@@ -41,7 +40,4 @@ public interface ArtistRepository extends JpaRepository<ArtistEntity, Long> {
     @Query("SELECT count(artist) FROM ArtistEntity artist WHERE " +
             "artist.fullLoaded = :fullLoaded AND artist.topLoaded = :topLoaded")
     Long countArtists(@Param("fullLoaded") boolean fullLoaded, @Param("topLoaded") boolean topLoaded);
-
-    @Query("SELECT artist FROM ArtistEntity artist WHERE artist.fansCount IS NULL OR artist.albumsCount IS NULL")
-    Page<ArtistEntity> findArtistsForEnriching(Pageable pageable);
 }

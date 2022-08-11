@@ -69,10 +69,6 @@ public class ArtistDbService {
         artistRepository.flush();
     }
 
-    public List<ArtistEntity> getArtistsForEnriching(int chunkSize) {
-        return artistRepository.findArtistsForEnriching(Pageable.ofSize(chunkSize)).toList();
-    }
-
     public List<ArtistEntity> loadArtistsByIds(Collection<Long> artistIds) {
         return artistRepository.findAllById(artistIds);
     }

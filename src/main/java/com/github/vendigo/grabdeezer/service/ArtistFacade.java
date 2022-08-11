@@ -24,7 +24,6 @@ public class ArtistFacade {
     public static final int PRELOAD_CHUNK_SIZE = 45;
     public static final int FULL_LOAD_CHUNK_SIZE = 1;
     public static final int UPDATE_CHUNK_SIZE = 1;
-    public static final int ENRICH_FANS_CHUNK_SIZE = 50;
     private static final int TOP_LOAD_CHUNK_SIZE = 20;
     private final ArtistDeezerService artistDeezerService;
     private final ArtistDbService artistDbService;
@@ -82,25 +81,6 @@ public class ArtistFacade {
         long artistsToLoad = artistDbService.countArtistsToTopLoad();
         log.info("{} new artists saved, {} to process", savedNew, artistsToLoad);
         return artistsToLoad;
-    }
-
-    @Transactional
-    public boolean enrichArtists() {
-        List<ArtistEntity> artists = artistDbService.getArtistsForEnriching(ENRICH_FANS_CHUNK_SIZE);
-
-        if (artists.isEmpty()) {
-            return false;
-        }
-
-        artists.forEach(artist -> {
-            ArtistDto artistDto = artistDeezerService.preloadArtist(artist.getId());
-            if (artistDto != null) {
-                artist.setFansCount(artistDto.fans());
-                artist.setAlbumsCount(artistDto.albums());
-            }
-        });
-
-        return true;
     }
 
     private int saveMissingAsPreloaded(List<TrackDto> tracks) {
