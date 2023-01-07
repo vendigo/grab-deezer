@@ -84,6 +84,24 @@ where a1.id > a2.id and a1.priority > -90 and a2.priority > -90
 order by a1.id, a2.id) as ranks
 where trackRank = 1);
 
+--Track updates
+select dt.id,
+       dt.title,
+       dt.duration,
+       dt.preview,
+       dt.release_date,
+       string_agg(da.id::text, '|') as contributors
+from dez_track dt
+         join dez_contributor dc on dt.id = dc.track_id
+         join dez_artist da on dc.artist_id = da.id
+where created_date > DATE'2022-12-01'
+group by dt.id, dt.title, dt.duration, dt.preview, dt.release_date
+having count(dc.artist_id) > 1;
 
+-- Artist updates
+select id, name, picture, nb_fans as fans, priority
+from dez_artist
+where priority > 0
+order by priority desc, fans desc;
 
 
