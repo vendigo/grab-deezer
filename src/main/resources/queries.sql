@@ -94,7 +94,7 @@ select dt.id,
 from dez_track dt
          join dez_contributor dc on dt.id = dc.track_id
          join dez_artist da on dc.artist_id = da.id
-where created_date > DATE'2022-12-01'
+where created_date > DATE'2023-01-08'
 group by dt.id, dt.title, dt.duration, dt.preview, dt.release_date
 having count(dc.artist_id) > 1;
 
